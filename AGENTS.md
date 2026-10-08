@@ -19,7 +19,7 @@ Requirements: JDK 17, Android SDK platform 35 + build-tools 35.0.0, `local.prope
 ./gradlew assembleRelease        # R8-minified build; run when touching manifest components or reflection
 ```
 
-Before finishing a change: `assembleDebug testDebugUnitTest verifyPaparazziDebug lintDebug` must all pass. There is no emulator in CI; Paparazzi screenshots are the visual check, so open the PNGs you re-record.
+Before finishing a change: `assembleDebug testDebugUnitTest verifyPaparazziDebug lintDebug` must all pass. CI (`.github/workflows/android.yml`) runs the same tasks plus `assembleRelease` on every push to `main` and every pull request. There is no emulator in CI; Paparazzi screenshots are the visual check, so open the PNGs you re-record.
 
 Network goes through a proxy on some machines. Pass proxy settings as `-D` flags on the command line; never commit credentials to `gradle.properties` or any other file.
 
@@ -80,5 +80,12 @@ Documentation is part of every change:
 | change colours, typography, spacing, motion or accessibility rules | `docs/DESIGN.md` |
 | change architecture, invariants, conventions or verification commands | `AGENTS.md` |
 | change UI appearance | re-record Paparazzi snapshots (README screenshots come from them) |
+| make a user-visible change that will ship | an entry under the next version in `CHANGELOG.md` (Release notes are taken from it) |
 
-Bump `versionCode`/`versionName` in `app/build.gradle.kts` for releases and keep `docs/FEATURES.md` in sync.
+## Releases
+
+1. Bump `versionCode`/`versionName` in `app/build.gradle.kts`, add a `## [X.Y.Z] - YYYY-MM-DD` section at the top of `CHANGELOG.md`, update the version line in `docs/FEATURES.md`, and commit to `main`.
+2. Create an annotated tag `vX.Y.Z` on that commit and push it. CI builds, signs with the release key from repository secrets (`scripts/sign-apk.sh`), and creates the GitHub Release with `interval-timer-vX.Y.Z.apk` and its `.sha256`.
+3. To (re)publish an existing tag, run the workflow manually with the `tag` input.
+
+The release key is never committed (`*.jks`, `keystore.properties` are git-ignored). Builds stay unsigned in Gradle; signing happens only in `scripts/sign-apk.sh`, which is why any tag can be released.
