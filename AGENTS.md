@@ -12,7 +12,7 @@ Requirements: JDK 17, Android SDK platform 35 + build-tools 35.0.0, `local.prope
 
 ```bash
 ./gradlew assembleDebug          # compile
-./gradlew testDebugUnitTest      # JVM unit tests (state machine, keypad entry, formatting) + screenshot rendering
+./gradlew testDebugUnitTest      # JVM unit tests (state machine, field-based duration entry, formatting) + screenshot rendering
 ./gradlew verifyPaparazziDebug   # compare screenshots with app/src/test/snapshots/images
 ./gradlew recordPaparazziDebug   # re-record screenshots after an intended UI change, then look at them
 ./gradlew lintDebug              # must report "No issues found"
@@ -37,8 +37,10 @@ Network goes through a proxy on some machines. Pass proxy settings as `-D` flags
 ```
 
 - `timer/TimerState.kt`: `TimerState` (Idle / Running / Paused / Finished) and `TimerMachine`, pure transition functions. All time values are `SystemClock.elapsedRealtime()`.
+- `timer/DurationEntry.kt`: the 时/分/秒 editor model (select a field, type digits, auto-advance). Pure Kotlin; `TimerViewModel` keeps it in `SavedStateHandle` via `encode()`/`decode()`.
 - `timer/TimerController.kt`: the single entry point for changing state. Each transition persists, (re)arms or cancels the alarm, and starts the service.
-- `service/TimerService.kt`: foreground service (`specialUse`). Renders state → notification; starts/stops `Alerter`; schedules COUNT-mode auto-silence; keeps an in-process backup timer.
+- `service/TimerService.kt`: foreground service (`specialUse`). Renders state → notification; while running, re-posts the notification each time the displayed second changes (the remaining time is in the title) and reports time up as a backup for the alarm; starts/stops `Alerter`; schedules COUNT-mode auto-silence.
+- `service/Alerter.kt`: vibration, optional sound, a CPU wake lock, and a screen wake lock (`ACQUIRE_CAUSES_WAKEUP`) that lights the screen at time up independently of the full-screen-intent permission.
 - `service/TimerNotifications.kt`: two channels (`timer_running` low, `timer_alert` high). Running/paused use notification ID 1, finished uses ID 2 so each new round re-alerts.
 - `receiver/TimerActionReceiver.kt`: notification buttons. `receiver/TimerAlarmReceiver.kt`: alarm callback (may cold-start the process).
 - `ui/AlarmActivity.kt`: shown over the keyguard via the full-screen intent; closes itself when the state leaves Finished.
@@ -50,9 +52,10 @@ Network goes through a proxy on some machines. Pass proxy settings as `-D` flags
 2. **Notification actions must be broadcast `PendingIntent`s** (`TimerActionReceiver.pendingIntent`). Activity intents require unlocking and would break the lock-screen reset feature.
 3. **Every `startForegroundService` must be answered by `startForeground`** — `TimerService.onStartCommand` always calls `promote()`. Starting the service from the background is only legal from exempt contexts (visible activity, notification action, exact alarm). `TimerService.start(force = true)` is for foreground callers only.
 4. **Lock-screen visibility**: notifications use `VISIBILITY_PUBLIC`; `AlarmActivity` keeps `showWhenLocked`/`turnScreenOn` (manifest + code for API 26).
-5. **Alerts use alarm usage** (`USAGE_ALARM`) so vibration/sound work in the background. Channels have no sound/vibration of their own; `Alerter` plays them according to the in-app settings.
-6. Elapsed-realtime state is boot-scoped: `TimerStore` discards state from a previous boot. Do not switch to wall-clock time without handling clock changes.
-7. Keep `TimerMachine` pure (no Android imports) so it stays unit-testable.
+5. **Remaining time lives in the notification title**, not in the platform chronometer (several ROMs hide the header where the chronometer is drawn). Keep the once-per-second update in `TimerService.countDown`; do not add a wake lock for it.
+6. **Alerts use alarm usage** (`USAGE_ALARM`) so vibration/sound work in the background. Channels have no sound/vibration of their own; `Alerter` plays them according to the in-app settings.
+7. Elapsed-realtime state is boot-scoped: `TimerStore` discards state from a previous boot. Do not switch to wall-clock time without handling clock changes.
+8. Keep `TimerMachine` and `DurationEntry` pure (no Android imports) so it stays unit-testable.
 
 ## UI conventions
 
