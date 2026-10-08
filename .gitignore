@@ -8,3 +8,8 @@ local.properties
 captures/
 *.apk
 *.aab
+
+# Signing keys never belong in the repository
+*.jks
+*.keystore
+keystore.properties
