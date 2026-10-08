@@ -7,7 +7,8 @@ import app.cash.paparazzi.Paparazzi
 import app.intervaltimer.settings.AlertSettings
 import app.intervaltimer.settings.VibrationMode
 import app.intervaltimer.system.SystemStatus
-import app.intervaltimer.timer.DurationDigits
+import app.intervaltimer.timer.DurationEntry
+import app.intervaltimer.timer.TimeField
 import app.intervaltimer.timer.TimerState
 import app.intervaltimer.ui.alert.AlertScreen
 import app.intervaltimer.ui.settings.SettingsScreen
@@ -31,21 +32,25 @@ class ScreenshotTest {
     private val fiveMinutes = 5 * 60_000L
 
     @Test
-    fun setup_light() = snap(PHONE) { Timer(TimerUiState(entry = DurationDigits("500"))) }
+    fun setup_light() = snap(PHONE) { Timer(TimerUiState(entry = DurationEntry(minutes = 5))) }
 
     @Test
-    fun setup_dark() = snap(PHONE.copy(nightMode = NightMode.NIGHT)) { Timer(TimerUiState(entry = DurationDigits("2500"))) }
-
-    @Test
-    fun setup_smallPhone_notificationsOff() = snap(SMALL_PHONE) {
-        Timer(TimerUiState(entry = DurationDigits("130"), notificationsEnabled = false))
+    fun setup_dark() = snap(PHONE.copy(nightMode = NightMode.NIGHT)) {
+        Timer(TimerUiState(entry = DurationEntry(minutes = 2, selected = TimeField.MINUTES, typedDigits = 1)))
     }
 
     @Test
-    fun setup_landscape() = snap(PHONE.copy(orientation = ScreenOrientation.LANDSCAPE)) { Timer(TimerUiState(entry = DurationDigits("500"))) }
+    fun setup_smallPhone_notificationsOff() = snap(SMALL_PHONE) {
+        Timer(TimerUiState(entry = DurationEntry(minutes = 1, seconds = 30, selected = TimeField.SECONDS), notificationsEnabled = false))
+    }
 
     @Test
-    fun setup_largeFont() = snap(PHONE.copy(fontScale = 1.6f)) { Timer(TimerUiState(entry = DurationDigits("13000"))) }
+    fun setup_landscape() = snap(PHONE.copy(orientation = ScreenOrientation.LANDSCAPE)) { Timer(TimerUiState(entry = DurationEntry(minutes = 5))) }
+
+    @Test
+    fun setup_largeFont() = snap(PHONE.copy(fontScale = 1.6f)) {
+        Timer(TimerUiState(entry = DurationEntry(hours = 1, minutes = 30, selected = TimeField.HOURS)))
+    }
 
     @Test
     fun running_light() = snap(PHONE) {

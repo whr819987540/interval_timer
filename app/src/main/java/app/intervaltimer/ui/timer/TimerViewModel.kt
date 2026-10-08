@@ -12,7 +12,8 @@ import app.intervaltimer.appContainer
 import app.intervaltimer.settings.AlertSettings
 import app.intervaltimer.settings.SettingsRepository
 import app.intervaltimer.system.SystemChecks
-import app.intervaltimer.timer.DurationDigits
+import app.intervaltimer.timer.DurationEntry
+import app.intervaltimer.timer.TimeField
 import app.intervaltimer.timer.TimerController
 import app.intervaltimer.timer.TimerState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,15 +25,16 @@ import kotlinx.coroutines.flow.stateIn
 @Immutable
 data class TimerUiState(
     val timer: TimerState = TimerState.Idle,
-    val entry: DurationDigits = DurationDigits.Empty,
+    val entry: DurationEntry = DurationEntry(),
     val alert: AlertSettings = AlertSettings(),
     val notificationsEnabled: Boolean = true,
 )
 
 sealed interface TimerEvent {
-    data class Key(val key: String) : TimerEvent
+    data class SelectField(val field: TimeField) : TimerEvent
+    data class Digit(val digit: Int) : TimerEvent
     data object Backspace : TimerEvent
-    data object Clear : TimerEvent
+    data object ClearField : TimerEvent
     data class Preset(val ms: Long) : TimerEvent
     data object Start : TimerEvent
     data object Pause : TimerEvent
@@ -48,18 +50,19 @@ class TimerViewModel(
     private val savedState: SavedStateHandle,
     private val readNotificationsEnabled: () -> Boolean,
 ) : ViewModel() {
-    private val entryDigits = savedState.getStateFlow(KEY_ENTRY, DurationDigits.fromMillis(settings.lastDurationMs).digits)
+    private val entryText = savedState.getStateFlow(KEY_ENTRY, DurationEntry.fromMillis(settings.lastDurationMs).encode())
+    private val currentEntry: DurationEntry get() = decodeEntry(entryText.value)
     private val notificationsEnabled = MutableStateFlow(readNotificationsEnabled())
 
     val uiState: StateFlow<TimerUiState> =
-        combine(controller.state, entryDigits, settings.alert, notificationsEnabled) { timer, digits, alert, notifications ->
-            TimerUiState(timer, DurationDigits(digits), alert, notifications)
+        combine(controller.state, entryText, settings.alert, notificationsEnabled) { timer, entry, alert, notifications ->
+            TimerUiState(timer, decodeEntry(entry), alert, notifications)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = TimerUiState(
                 timer = controller.state.value,
-                entry = DurationDigits(entryDigits.value),
+                entry = currentEntry,
                 alert = settings.alert.value,
                 notificationsEnabled = notificationsEnabled.value,
             ),
@@ -67,11 +70,12 @@ class TimerViewModel(
 
     fun onEvent(event: TimerEvent) {
         when (event) {
-            is TimerEvent.Key -> updateEntry { it.append(event.key) }
+            is TimerEvent.SelectField -> updateEntry { it.select(event.field) }
+            is TimerEvent.Digit -> updateEntry { it.type(event.digit) }
             TimerEvent.Backspace -> updateEntry { it.backspace() }
-            TimerEvent.Clear -> updateEntry { DurationDigits.Empty }
-            is TimerEvent.Preset -> updateEntry { DurationDigits.fromMillis(event.ms) }
-            TimerEvent.Start -> controller.start(DurationDigits(entryDigits.value).totalMs)
+            TimerEvent.ClearField -> updateEntry { it.clearField() }
+            is TimerEvent.Preset -> updateEntry { DurationEntry.fromMillis(event.ms, it.selected) }
+            TimerEvent.Start -> controller.start(currentEntry.totalMs)
             TimerEvent.Pause -> controller.pause()
             TimerEvent.Resume -> controller.resume()
             TimerEvent.Restart -> controller.restart()
@@ -93,12 +97,15 @@ class TimerViewModel(
     /** True when the system permission dialog should be shown instead of opening settings. */
     fun consumeNotificationPrompt(): Boolean = settings.consumeNotificationPrompt()
 
-    private inline fun updateEntry(transform: (DurationDigits) -> DurationDigits) {
-        savedState[KEY_ENTRY] = transform(DurationDigits(entryDigits.value)).digits
+    private fun decodeEntry(text: String): DurationEntry =
+        DurationEntry.decode(text) ?: DurationEntry.fromMillis(settings.lastDurationMs)
+
+    private inline fun updateEntry(transform: (DurationEntry) -> DurationEntry) {
+        savedState[KEY_ENTRY] = transform(currentEntry).encode()
     }
 
     companion object {
-        private const val KEY_ENTRY = "entry_digits"
+        private const val KEY_ENTRY = "duration_entry"
 
         val Factory = viewModelFactory {
             initializer {

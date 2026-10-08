@@ -8,15 +8,16 @@
     <string name="duration_hours">%1$d 小时</string>
     <string name="duration_minutes">%1$d 分钟</string>
     <string name="duration_seconds">%1$d 秒</string>
-    <string name="unit_hours">时</string>
-    <string name="unit_minutes">分</string>
+    <string name="unit_hours">小时</string>
+    <string name="unit_minutes">分钟</string>
     <string name="unit_seconds">秒</string>
 
     <!-- Timer screen -->
-    <string name="entry_description">已设定 %1$s</string>
+    <string name="entry_hint">点选小时、分钟或秒，再用键盘输入</string>
     <string name="remaining_description">剩余 %1$s</string>
-    <string name="delete">删除</string>
-    <string name="clear_all">清空</string>
+    <string name="delete">删除一位</string>
+    <string name="clear_field">清零</string>
+    <string name="clear_field_description">清零当前项</string>
     <string name="round_label">第 %1$d 轮</string>
     <string name="total_label">共 %1$s</string>
     <string name="paused">已暂停</string>
