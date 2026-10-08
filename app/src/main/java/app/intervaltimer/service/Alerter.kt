@@ -25,6 +25,7 @@ class Alerter(private val context: Context) {
 
     private var ringtone: Ringtone? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var screenLock: PowerManager.WakeLock? = null
 
     var isActive = false
         private set
@@ -32,6 +33,7 @@ class Alerter(private val context: Context) {
     fun start(settings: AlertSettings) {
         stop()
         isActive = true
+        wakeScreen()
         val effect = when (settings.mode) {
             VibrationMode.COUNT -> VibrationEffect.createWaveform(pulseTimings(settings.vibrationCount), NO_REPEAT)
             VibrationMode.CONTINUOUS -> VibrationEffect.createWaveform(longArrayOf(0, PULSE_ON_MS, PULSE_OFF_MS), 0)
@@ -62,7 +64,24 @@ class Alerter(private val context: Context) {
         ringtone = null
         wakeLock?.takeIf { it.isHeld }?.release()
         wakeLock = null
+        // ON_AFTER_RELEASE: the screen then stays on for the normal timeout instead of going dark at once.
+        screenLock?.takeIf { it.isHeld }?.release()
+        screenLock = null
         isActive = false
+    }
+
+    /**
+     * Lights the screen when time is up. This does not depend on the full-screen-intent permission
+     * or vendor "show on lock screen" switches, which can stop AlarmActivity from appearing; when
+     * AlarmActivity does appear it keeps the screen on by itself.
+     */
+    private fun wakeScreen() {
+        @Suppress("DEPRECATION") // No replacement for lighting the screen without an activity.
+        val flags = PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE
+        screenLock = powerManager.newWakeLock(flags, "IntervalTimer:screen").apply {
+            setReferenceCounted(false)
+            acquire(SCREEN_ON_MS)
+        }
     }
 
     private fun vibrate(effect: VibrationEffect) {
@@ -99,6 +118,7 @@ class Alerter(private val context: Context) {
         private const val PREVIEW_PULSES = 3
         private const val WAKE_LOCK_SLACK_MS = 5_000L
         private const val CONTINUOUS_WAKE_LOCK_MS = 30 * 60_000L
+        private const val SCREEN_ON_MS = 60_000L
 
         /** How long [pulses] vibration pulses take; COUNT mode silences itself after this. */
         fun durationMs(pulses: Int): Long = pulses * (PULSE_ON_MS + PULSE_OFF_MS)
