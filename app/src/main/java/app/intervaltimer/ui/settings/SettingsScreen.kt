@@ -80,6 +80,7 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = viewModel(f
         onSoundChange = viewModel::setSound,
         onPreview = viewModel::preview,
         onFixNotifications = notificationAccess::request,
+        onFixLockScreen = { context.openSystemSettings(SystemChecks.notificationSettings(context)) },
         onFixExactAlarms = { context.openSystemSettings(SystemChecks.exactAlarmSettings(context)) },
         onFixFullScreen = { context.openSystemSettings(SystemChecks.fullScreenSettings(context)) },
         onFixBattery = { context.openSystemSettings(SystemChecks.batteryOptimizationRequest(context)) },
@@ -97,6 +98,7 @@ fun SettingsScreen(
     onSoundChange: (Boolean) -> Unit,
     onPreview: () -> Unit,
     onFixNotifications: () -> Unit,
+    onFixLockScreen: () -> Unit,
     onFixExactAlarms: () -> Unit,
     onFixFullScreen: () -> Unit,
     onFixBattery: () -> Unit,
@@ -141,7 +143,7 @@ fun SettingsScreen(
                 )
             }
             item(key = "background_card") {
-                BackgroundCard(state.status, onFixNotifications, onFixExactAlarms, onFixFullScreen, onFixBattery)
+                BackgroundCard(state.status, onFixNotifications, onFixLockScreen, onFixExactAlarms, onFixFullScreen, onFixBattery)
             }
             item(key = "vendor_card") { VendorCard(onOpenAppDetails) }
             item(key = "version") {
@@ -294,12 +296,15 @@ private fun CountStepper(count: Int, onCountChange: (Int) -> Unit) {
 private fun BackgroundCard(
     status: SystemStatus,
     onFixNotifications: () -> Unit,
+    onFixLockScreen: () -> Unit,
     onFixExactAlarms: () -> Unit,
     onFixFullScreen: () -> Unit,
     onFixBattery: () -> Unit,
 ) {
     SettingsCard {
         StatusRow(R.string.status_notifications, R.string.status_notifications_desc, status.notifications, onFixNotifications)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        StatusRow(R.string.status_lock_screen, R.string.status_lock_screen_desc, status.lockScreenNotifications, onFixLockScreen)
         if (SystemChecks.hasFullScreenSetting) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             StatusRow(R.string.status_full_screen, R.string.status_full_screen_desc, status.fullScreenAlerts, onFixFullScreen)

@@ -71,7 +71,9 @@
     <string name="section_background">后台与锁屏</string>
     <string name="background_intro">为了在熄屏、锁屏和切到后台时依然准时提醒，建议把下面各项都开启。</string>
     <string name="status_notifications">通知</string>
-    <string name="status_notifications_desc">在锁屏显示倒计时，并可直接暂停、重置</string>
+    <string name="status_notifications_desc">显示剩余时间和暂停、重置按钮，锁屏操作必需</string>
+    <string name="status_lock_screen">锁屏显示通知</string>
+    <string name="status_lock_screen_desc">在锁屏上显示剩余时间与按钮；需允许本应用的通知在锁屏显示</string>
     <string name="status_full_screen">锁屏全屏提醒</string>
     <string name="status_full_screen_desc">时间到时点亮屏幕显示大按钮，无需解锁即可重置</string>
     <string name="status_exact_alarm">精确闹钟</string>
@@ -81,7 +83,7 @@
     <string name="status_on">已开启</string>
     <string name="status_off">未开启</string>
     <string name="fix">去开启</string>
-    <string name="vendor_hint">部分国产系统（如 HyperOS/MIUI、HarmonyOS/EMUI、ColorOS、OriginOS）还会额外限制后台。若计时仍被清理，请在应用详情中允许「自启动」「后台运行」，并在最近任务里锁定本应用。</string>
+    <string name="vendor_hint">部分国产系统（如 HyperOS/MIUI、HarmonyOS/EMUI、ColorOS、OriginOS）有额外限制：\n· 计时被清理：在应用详情中允许「自启动」「后台运行」，并在最近任务里锁定本应用；\n· 锁屏看不到通知：在通知管理中打开本应用的「锁屏通知」；\n· 时间到不弹出锁屏提醒页：在应用权限中允许「锁屏显示」「后台弹出界面」。</string>
     <string name="open_app_details">打开应用详情</string>
     <string name="version_label">版本 %1$s</string>
 </resources>

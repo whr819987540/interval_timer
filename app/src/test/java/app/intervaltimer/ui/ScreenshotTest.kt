@@ -83,7 +83,9 @@ class ScreenshotTest {
     }
 
     @Test
-    fun settings_light() = snap(TALL_PHONE) { Settings(SettingsUiState(status = SystemStatus(batteryUnrestricted = false, fullScreenAlerts = false))) }
+    fun settings_light() = snap(TALL_PHONE) {
+        Settings(SettingsUiState(status = SystemStatus(lockScreenNotifications = false, batteryUnrestricted = false, fullScreenAlerts = false)))
+    }
 
     @Test
     fun settings_dark_continuous() = snap(TALL_PHONE.copy(nightMode = NightMode.NIGHT)) {
@@ -107,6 +109,7 @@ class ScreenshotTest {
         onSoundChange = {},
         onPreview = {},
         onFixNotifications = {},
+        onFixLockScreen = {},
         onFixExactAlarms = {},
         onFixFullScreen = {},
         onFixBattery = {},
@@ -116,6 +119,6 @@ class ScreenshotTest {
     private companion object {
         val PHONE = DeviceConfig.PIXEL_5
         val SMALL_PHONE = DeviceConfig.NEXUS_5
-        val TALL_PHONE = DeviceConfig.PIXEL_5.copy(screenHeight = 3600)
+        val TALL_PHONE = DeviceConfig.PIXEL_5.copy(screenHeight = 4200)
     }
 }
