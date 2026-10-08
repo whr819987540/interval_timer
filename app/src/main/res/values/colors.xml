@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background before Compose draws; matches the theme background. -->
+    <color name="window_background">#FFF8FAFC</color>
+    <color name="brand_red">#FFDC2626</color>
+    <color name="ic_launcher_background">#FF0F172A</color>
+</resources>

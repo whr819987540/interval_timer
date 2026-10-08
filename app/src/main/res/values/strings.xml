@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">间隔计时</string>
+    <string name="settings">设置</string>
+    <string name="back">返回</string>
+
+    <!-- Durations -->
+    <string name="duration_hours">%1$d 小时</string>
+    <string name="duration_minutes">%1$d 分钟</string>
+    <string name="duration_seconds">%1$d 秒</string>
+    <string name="unit_hours">时</string>
+    <string name="unit_minutes">分</string>
+    <string name="unit_seconds">秒</string>
+
+    <!-- Timer screen -->
+    <string name="entry_description">已设定 %1$s</string>
+    <string name="remaining_description">剩余 %1$s</string>
+    <string name="delete">删除</string>
+    <string name="clear_all">清空</string>
+    <string name="round_label">第 %1$d 轮</string>
+    <string name="total_label">共 %1$s</string>
+    <string name="paused">已暂停</string>
+    <string name="notifications_off_banner">通知未开启：锁屏时将无法查看和重置计时</string>
+    <string name="enable">开启</string>
+
+    <!-- Actions -->
+    <string name="action_start">开始</string>
+    <string name="action_pause">暂停</string>
+    <string name="action_resume">继续</string>
+    <string name="action_restart_round">重新计时</string>
+    <string name="action_reset">重置</string>
+    <string name="action_silence">关闭提醒</string>
+    <string name="action_stop">停止</string>
+    <string name="action_stop_timer">停止计时</string>
+
+    <!-- Time up -->
+    <string name="time_up">时间到</string>
+    <string name="round_done">第 %1$d 轮完成 · %2$s</string>
+    <string name="next_round_hint">点「重置」立即开始第 %1$d 轮</string>
+    <string name="alerting_count">正在振动提醒…</string>
+    <string name="alerting_continuous">持续提醒中，点下方按钮结束</string>
+
+    <!-- Notifications -->
+    <string name="channel_running">倒计时进行中</string>
+    <string name="channel_running_desc">显示剩余时间，并提供暂停、重新计时、停止等操作</string>
+    <string name="channel_alert">时间到提醒</string>
+    <string name="channel_alert_desc">倒计时结束时提醒，可在锁屏直接重置</string>
+    <string name="notif_running_title">第 %1$d 轮 · 倒计时中</string>
+    <string name="notif_paused_title">第 %1$d 轮 · 已暂停</string>
+    <string name="notif_total">本轮 %1$s</string>
+    <string name="notif_remaining">剩余 %1$s</string>
+    <string name="notif_done_title">时间到 · 第 %1$d 轮完成</string>
+    <string name="notif_done_text">点「重置」开始第 %1$d 轮</string>
+
+    <!-- Settings -->
+    <string name="section_alert">到点提醒</string>
+    <string name="alert_mode">提醒方式</string>
+    <string name="mode_count">振动几下</string>
+    <string name="mode_continuous">持续振动</string>
+    <string name="mode_count_desc">振动指定次数后自动停止，计时停在「时间到」，等你重置开始下一轮。</string>
+    <string name="mode_continuous_desc">一直振动，直到你点「重置」「关闭提醒」或「停止计时」。</string>
+    <string name="vibration_count">振动次数</string>
+    <string name="count_value">%1$d 次</string>
+    <string name="decrease">减少</string>
+    <string name="increase">增加</string>
+    <string name="sound">同时响铃</string>
+    <string name="sound_desc">使用系统默认闹钟铃声，与振动同时停止</string>
+    <string name="preview_desc">试一下振动的节奏（3 下）</string>
+    <string name="preview">试一下</string>
+
+    <string name="section_background">后台与锁屏</string>
+    <string name="background_intro">为了在熄屏、锁屏和切到后台时依然准时提醒，建议把下面各项都开启。</string>
+    <string name="status_notifications">通知</string>
+    <string name="status_notifications_desc">在锁屏显示倒计时，并可直接暂停、重置</string>
+    <string name="status_full_screen">锁屏全屏提醒</string>
+    <string name="status_full_screen_desc">时间到时点亮屏幕显示大按钮，无需解锁即可重置</string>
+    <string name="status_exact_alarm">精确闹钟</string>
+    <string name="status_exact_alarm_desc">保证到点准时唤醒，不被省电模式推迟</string>
+    <string name="status_battery">不限制电池优化</string>
+    <string name="status_battery_desc">降低计时在后台被系统清理的概率</string>
+    <string name="status_on">已开启</string>
+    <string name="status_off">未开启</string>
+    <string name="fix">去开启</string>
+    <string name="vendor_hint">部分国产系统（如 HyperOS/MIUI、HarmonyOS/EMUI、ColorOS、OriginOS）还会额外限制后台。若计时仍被清理，请在应用详情中允许「自启动」「后台运行」，并在最近任务里锁定本应用。</string>
+    <string name="open_app_details">打开应用详情</string>
+    <string name="version_label">版本 %1$s</string>
+</resources>
