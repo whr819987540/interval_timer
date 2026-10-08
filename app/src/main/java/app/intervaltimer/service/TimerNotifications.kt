@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import app.intervaltimer.R
 import app.intervaltimer.receiver.TimerActionReceiver
 import app.intervaltimer.timer.DurationFormat
+import app.intervaltimer.timer.TimerMachine
 import app.intervaltimer.timer.TimerState
 import app.intervaltimer.ui.AlarmActivity
 import app.intervaltimer.ui.MainActivity
@@ -55,29 +56,33 @@ class TimerNotifications(private val context: Context) {
     fun build(state: TimerState): Notification =
         if (state is TimerState.Finished) finished(state) else countdown(state)
 
+    /**
+     * Remaining time goes in the title, which every ROM shows on the lock screen and in the shade.
+     * (The platform chronometer lives in the header, which several ROMs hide.) [TimerService]
+     * re-posts this every second while running.
+     */
     private fun countdown(state: TimerState): Notification {
         val res = context.resources
         val builder = baseBuilder(CHANNEL_RUNNING)
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .setSilent(true)
+            .setShowWhen(false)
             .setContentIntent(openApp())
         when (state) {
-            is TimerState.Running -> builder
-                .setContentTitle(res.getString(R.string.notif_running_title, state.round))
-                .setContentText(res.getString(R.string.notif_total, DurationFormat.label(res, state.totalMs)))
-                .setUsesChronometer(true)
-                .setChronometerCountDown(true)
-                .setShowWhen(true)
-                .setWhen(System.currentTimeMillis() + (state.endAtElapsed - SystemClock.elapsedRealtime()))
-                .addAction(R.drawable.ic_pause, res.getString(R.string.action_pause), action(TimerActionReceiver.ACTION_PAUSE))
+            is TimerState.Running -> {
+                val remaining = TimerMachine.remainingMs(state, SystemClock.elapsedRealtime())
+                builder
+                    .setContentTitle(res.getString(R.string.notif_running_title, DurationFormat.clock(remaining)))
+                    .setContentText(res.getString(R.string.notif_round_total, state.round, DurationFormat.label(res, state.totalMs)))
+                    .setProgress(PROGRESS_MAX, elapsedProgress(remaining, state.totalMs), false)
+                    .addAction(R.drawable.ic_pause, res.getString(R.string.action_pause), action(TimerActionReceiver.ACTION_PAUSE))
+            }
             is TimerState.Paused -> builder
-                .setContentTitle(res.getString(R.string.notif_paused_title, state.round))
-                .setContentText(res.getString(R.string.notif_remaining, DurationFormat.clock(state.remainingMs)))
-                .setShowWhen(false)
+                .setContentTitle(res.getString(R.string.notif_paused_title, DurationFormat.clock(state.remainingMs)))
+                .setContentText(res.getString(R.string.notif_round_total, state.round, DurationFormat.label(res, state.totalMs)))
+                .setProgress(PROGRESS_MAX, elapsedProgress(state.remainingMs, state.totalMs), false)
                 .addAction(R.drawable.ic_play, res.getString(R.string.action_resume), action(TimerActionReceiver.ACTION_RESUME))
-            else -> builder
-                .setContentTitle(res.getString(R.string.app_name))
-                .setShowWhen(false)
+            else -> builder.setContentTitle(res.getString(R.string.app_name))
         }
         if (state !is TimerState.Idle) {
             builder
@@ -86,6 +91,9 @@ class TimerNotifications(private val context: Context) {
         }
         return builder.build()
     }
+
+    private fun elapsedProgress(remainingMs: Long, totalMs: Long): Int =
+        (PROGRESS_MAX * (1 - remainingMs.toDouble() / totalMs.coerceAtLeast(1))).toInt().coerceIn(0, PROGRESS_MAX)
 
     private fun finished(state: TimerState.Finished): Notification {
         val res = context.resources
@@ -100,7 +108,7 @@ class TimerNotifications(private val context: Context) {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setContentTitle(res.getString(R.string.notif_done_title, state.round))
-            .setContentText(res.getString(R.string.notif_done_text, state.round + 1))
+            .setContentText(res.getString(R.string.notif_done_text, DurationFormat.label(res, state.totalMs), state.round + 1))
             .setShowWhen(false)
             .setContentIntent(alertScreen)
             .addAction(R.drawable.ic_replay, res.getString(R.string.action_reset), action(TimerActionReceiver.ACTION_RESTART))
@@ -136,6 +144,7 @@ class TimerNotifications(private val context: Context) {
         const val CHANNEL_ALERT = "timer_alert"
         const val ID_RUNNING = 1
         const val ID_ALERT = 2
+        private const val PROGRESS_MAX = 1000
         private const val REQUEST_OPEN_APP = 200
         private const val REQUEST_ALERT_SCREEN = 201
     }

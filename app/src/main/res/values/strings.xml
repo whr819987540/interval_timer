@@ -46,12 +46,11 @@
     <string name="channel_running_desc">显示剩余时间，并提供暂停、重新计时、停止等操作</string>
     <string name="channel_alert">时间到提醒</string>
     <string name="channel_alert_desc">倒计时结束时提醒，可在锁屏直接重置</string>
-    <string name="notif_running_title">第 %1$d 轮 · 倒计时中</string>
-    <string name="notif_paused_title">第 %1$d 轮 · 已暂停</string>
-    <string name="notif_total">本轮 %1$s</string>
-    <string name="notif_remaining">剩余 %1$s</string>
+    <string name="notif_running_title">剩余 %1$s</string>
+    <string name="notif_paused_title">已暂停 · 剩余 %1$s</string>
+    <string name="notif_round_total">第 %1$d 轮 · 设定 %2$s</string>
     <string name="notif_done_title">时间到 · 第 %1$d 轮完成</string>
-    <string name="notif_done_text">点「重置」开始第 %1$d 轮</string>
+    <string name="notif_done_text">设定 %1$s · 点「重置」开始第 %2$d 轮</string>
 
     <!-- Settings -->
     <string name="section_alert">到点提醒</string>

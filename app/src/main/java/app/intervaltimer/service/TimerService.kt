@@ -1,8 +1,10 @@
 package app.intervaltimer.service
 
+import android.Manifest
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
@@ -67,14 +69,31 @@ class TimerService : Service() {
             return
         }
         promote(state)
-        if (state is TimerState.Running) {
-            // Backup for the AlarmManager alarm while the CPU is awake (e.g. exact alarms revoked).
-            countdownJob = scope.launch {
-                delay((state.endAtElapsed - SystemClock.elapsedRealtime()).coerceAtLeast(0))
-                container.controller.onTimeUp()
-            }
-        }
+        if (state is TimerState.Running) countdownJob = scope.launch { countDown(state) }
         if (state is TimerState.Finished && state.alerting) startAlert() else stopAlert()
+    }
+
+    /**
+     * Re-posts the notification each time the displayed second changes, then reports time up as a
+     * backup for the AlarmManager alarm. While the CPU sleeps (screen off) the delay simply
+     * stretches; the next update after wake-up shows the correct time again.
+     */
+    private suspend fun countDown(state: TimerState.Running) {
+        while (true) {
+            val remaining = state.endAtElapsed - SystemClock.elapsedRealtime()
+            if (remaining <= 0) break
+            delay((remaining - 1) % 1000 + 1)
+            if (state.endAtElapsed > SystemClock.elapsedRealtime()) updateNotification(state)
+        }
+        container.controller.onTimeUp()
+    }
+
+    private fun updateNotification(state: TimerState) {
+        val allowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        if (!allowed) return
+        val notifications = container.notifications
+        NotificationManagerCompat.from(this).notify(notifications.idFor(state), notifications.build(state))
     }
 
     private fun promote(state: TimerState) {
